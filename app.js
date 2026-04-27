@@ -532,7 +532,7 @@ else{
 let followChart;
 let chartMode = "percent";
 
-function renderChart(done, notdone, villageMap){
+
 
   const isMobile = window.innerWidth < 768;
 
@@ -688,7 +688,7 @@ function renderChart(done, notdone, villageMap){
     });
   }
 }
-}
+
 function setMode(mode){
   chartMode = mode;
   loadFollow();
