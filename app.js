@@ -529,153 +529,164 @@ else{
   });
 
 
-const isMobile = window.innerWidth < 768;
+let followChart;
+let chartMode = "percent";
 
-// =========================
-// 🍩 โดนัท
-// =========================
-if(chartMode === "percent"){
+function renderChart(done, notdone, villageMap){
 
-  type = "doughnut";
+  const isMobile = window.innerWidth < 768;
 
-  let total = done + notdone || 1;
+  if(followChart) followChart.destroy();
 
-  const donePercent = ((done/total)*100).toFixed(1);
-  const notdonePercent = ((notdone/total)*100).toFixed(1);
+  let type, labels, datasets;
 
-  labels = ['ฉีดแล้ว','ยังไม่ฉีด'];
+  // =========================
+  // 🍩 DOUGHNUT (Mobile App Style)
+  // =========================
+  if(chartMode === "percent"){
 
-  datasets = [{
-    data:[donePercent, notdonePercent],
-    backgroundColor:['#22c55e','#ef4444'],
-    borderWidth:0
-  }];
+    type = "doughnut";
 
-  followChart = new Chart(document.getElementById("followChart"),{
-    type,
-    data:{ labels, datasets },
+    let total = done + notdone || 1;
 
-    options:{
-  responsive:true,
-  maintainAspectRatio:false,
-  cutout: isMobile ? '65%' : '70%',
+    const donePercent = ((done/total)*100).toFixed(1);
+    const notdonePercent = ((notdone/total)*100).toFixed(1);
 
-  plugins:{
-    legend:{
-      position: isMobile ? 'bottom' : 'right',
-      labels:{
-        boxWidth:12,
-        font:{size: isMobile ? 10 : 13}
-      }
-    },
-    tooltip:{
-      callbacks:{
-        label:(ctx)=> ctx.label + " : " + ctx.raw + "%"
-      }
-    }
-  }
+    labels = ['ฉีดแล้ว','ยังไม่ฉีด'];
 
-    },
+    datasets = [{
+      data:[donePercent, notdonePercent],
+      backgroundColor:['#34d399','#f87171'],
+      borderWidth:0
+    }];
 
-    plugins:[{
-      id:'centerText',
-      beforeDraw(chart){
-        const {ctx, chartArea:{width, height}} = chart;
+    followChart = new Chart(document.getElementById("followChart"),{
+      type,
+      data:{ labels, datasets },
 
-        ctx.save();
-        ctx.font = isMobile ? "bold 14px sans-serif" : "bold 20px sans-serif";
-        ctx.fillStyle = "#374151";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        cutout: isMobile ? '72%' : '70%',
+        layout:{ padding:10 },
 
-        ctx.fillText(donePercent + "%", width/2, height/2);
-        ctx.restore();
-      }
-    }]
-  });
-}
+        plugins:{
+          legend:{ display:false },
 
-// =========================
-// 📊 แท่ง
-// =========================
-else{
-
-  type = "bar";
-
-  let vLabels = Object.keys(villageMap);
-
-  vLabels = vLabels.sort((a,b)=>{
-    if(a==="ไม่ระบุ") return 1;
-    if(b==="ไม่ระบุ") return -1;
-    return a - b;
-  });
-
-  labels = vLabels;
-
-  const doneData = vLabels.map(v=>villageMap[v].done);
-  const notdoneData = vLabels.map(v=>villageMap[v].notdone);
-
-  const totalData = vLabels.map(v=> 
-    villageMap[v].done + villageMap[v].notdone
-  );
-
-  datasets = [
-    {
-      label:'ฉีดแล้ว',
-      data: doneData,
-      backgroundColor:'#5fd189',
-      borderRadius:8
-    },
-    {
-      label:'ยังไม่ฉีด',
-      data: notdoneData,
-      backgroundColor:'#f75454b6',
-      borderRadius:8
-    }
-  ];
-
-  followChart = new Chart(document.getElementById("followChart"),{
-    type,
-    data:{ labels, datasets },
-
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-
-      plugins:{
-        legend:{
-          position:'top',
-          labels:{
-            font:{size: isMobile ? 10 : 13}
-          }
-        },
-        tooltip:{
-          callbacks:{
-            afterLabel:(ctx)=>{
-              const i = ctx.dataIndex;
-              return "รวม: " + totalData[i] + " คน";
+          tooltip:{
+            callbacks:{
+              label:(ctx)=> ctx.label + " " + ctx.raw + "%"
             }
           }
         }
       },
 
-      scales:{
-  x:{
-    ticks:{
-      font:{size: isMobile ? 9 : 12},
-      maxRotation: isMobile ? 45 : 0
-    }
-  },
-  y:{
-    beginAtZero:true,
-    ticks:{
-      precision:0,
-      font:{size: isMobile ? 10 : 12}
-    }
+      plugins:[{
+        id:'centerText',
+        beforeDraw(chart){
+          const {ctx, chartArea:{width, height}} = chart;
+
+          ctx.save();
+
+          ctx.font = isMobile ? "bold 22px system-ui" : "bold 26px system-ui";
+          ctx.fillStyle = "#111827";
+          ctx.textAlign = "center";
+          ctx.fillText(donePercent + "%", width/2, height/2 - 5);
+
+          ctx.font = "12px system-ui";
+          ctx.fillStyle = "#6b7280";
+          ctx.fillText("ครอบคลุม", width/2, height/2 + 15);
+
+          ctx.restore();
+        }
+      }]
+    });
   }
-}
-    }
-  });
+
+  // =========================
+  // 📊 BAR (Mobile App Style)
+  // =========================
+  else{
+
+    type = "bar";
+
+    let vLabels = Object.keys(villageMap);
+
+    vLabels = vLabels.sort((a,b)=>{
+      if(a==="ไม่ระบุ") return 1;
+      if(b==="ไม่ระบุ") return -1;
+      return a - b;
+    });
+
+    labels = vLabels;
+
+    const doneData = vLabels.map(v=>villageMap[v].done);
+    const notdoneData = vLabels.map(v=>villageMap[v].notdone);
+    const totalData = vLabels.map(v=>villageMap[v].done + villageMap[v].notdone);
+
+    datasets = [
+      {
+        label:'ฉีดแล้ว',
+        data: doneData,
+        backgroundColor:'#34d399',
+        borderRadius:12,
+        barThickness: isMobile ? 12 : 18
+      },
+      {
+        label:'ยังไม่ฉีด',
+        data: notdoneData,
+        backgroundColor:'#f87171',
+        borderRadius:12,
+        barThickness: isMobile ? 12 : 18
+      }
+    ];
+
+    followChart = new Chart(document.getElementById("followChart"),{
+      type,
+      data:{ labels, datasets },
+
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        layout:{ padding:10 },
+
+        plugins:{
+          legend:{ display: !isMobile },
+
+          tooltip:{
+            callbacks:{
+              label:(ctx)=> ctx.dataset.label + ": " + ctx.raw,
+              afterBody:(items)=>{
+                const i = items[0].dataIndex;
+                return "รวม: " + totalData[i] + " คน";
+              }
+            }
+          }
+        },
+
+        scales:{
+          x:{
+            grid:{ display:false },
+            ticks:{
+              font:{size: isMobile ? 10 : 12},
+              maxRotation:0,
+              autoSkip:true,
+              maxTicksLimit:6
+            }
+          },
+
+          y:{
+            beginAtZero:true,
+            grid:{ color:"#e5e7eb" },
+            ticks:{
+              precision:0,
+              font:{size: isMobile ? 10 : 12}
+            }
+          }
+        }
+      }
+    });
+  }
 }
 }
 function setMode(mode){
