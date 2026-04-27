@@ -246,7 +246,6 @@ function loadFollow(){
         if(ageFilter === "6-12" && !(age > 6 && age <= 12)) continue;
         if(ageFilter === "1-2" && !(age > 12 && age <= 24)) continue;
         if(ageFilter === "2+" && !(age > 24)) continue;
-        
       // 🔍 filter ตำบล
       if(tambonFilter !== "all" && c.tambon !== tambonFilter) continue;
 
