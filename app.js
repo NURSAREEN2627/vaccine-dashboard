@@ -648,28 +648,30 @@ else{
             font:{size: isMobile ? 10 : 13}
           }
         },
-        tooltip:{
-          callbacks:{
-            afterLabel:(ctx)=>{
-              const i = ctx.dataIndex;
-              return "รวม: " + totalData[i] + " คน";
-            }
-          }
-        }
-      },
-
-      scales:{
-  x:{
-    ticks:{
-      font:{size: isMobile ? 9 : 12},
-      maxRotation: isMobile ? 45 : 0
+         plugins:{
+    legend:{
+      position:'top',
+      labels:{
+        font:{ size:12 }
+      }
     }
   },
-  y:{
-    beginAtZero:true,
-    ticks:{
-      precision:0,
-      font:{size: isMobile ? 10 : 12}
+
+  scales:{
+    x:{
+      ticks:{
+        font:{size:11},
+        maxRotation:0,
+        autoSkip:true,
+        maxTicksLimit:8 // 🔥 ลดความแน่น
+      }
+    },
+    y:{
+      beginAtZero:true,
+      ticks:{
+        precision:0,
+        font:{size:11}
+      }
     }
   }
 }
