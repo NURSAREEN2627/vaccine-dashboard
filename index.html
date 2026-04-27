@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>เด็กตกค้าง</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+
+html,body{
+  background:#f1f5f9;
+  font-family: 'Segoe UI', sans-serif;
+}
+.container-fluid{
+  max-width: 100%;
+}
+
+canvas{
+  width:100% !important;
+  height:100% !important;
+}
+
+.card{
+  overflow:hidden;
+}
+/* Sidebar */
+.sidebar{
+  width:260px;
+  background:linear-gradient(180deg,#1e293b,#0f172a);
+  color:white;
+  padding:20px 15px;
+  flex-shrink:0; /* 🔥 กันยุบ */
+}
+.sidebar a{
+  color:#d1d5db;
+}
+.sidebar a:hover{
+  background:#1f2937;
+  border-radius:20px;
+}
+.form-select{
+  min-width: 170px;
+  font-weight: 400;
+  padding: 10px;
+}
+
+.table select{
+  height: 45px;
+  border-radius: 7px;
+}
+/* Card */
+.card{
+  border:none;
+  border-radius:16px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* Chart */
+#followChart{
+  max-height:250px;
+}
+
+/* Table */
+.table thead{
+  background:#f8fafc;
+  position:sticky;
+  top:0;
+}
+.table td input{
+  font-size:13px;
+}
+
+.nav-link.active{
+  background:#3b4a60;
+  border-radius:6px;
+}
+/* Badge */
+.badge-success{background:#5fb980}
+.badge-danger{background:#c35353}
+.kpi-card{
+  border-radius:12px;
+  text-align:center;
+  padding:15px;
+}
+.section-title{
+  font-weight:600;
+  margin-bottom:10px;
+}
+
+/* แยกออกมา */
+.tambon-btn{
+  border-radius:12px;
+  padding:20px;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.tambon-btn:hover{
+  transform:translateY(-3px);
+}
+
+/* layout */
+.main-layout{
+  display:flex;
+  min-height:100vh;
+}
+
+/* input */
+.form-control{
+  height:34px;
+  font-size:13px;
+  padding:4px 8px;
+  border-radius:6px;
+}
+
+.btn{
+  height:34px;
+  font-size:13px;
+}
+
+
+.main-layout{
+  display:flex !important;   /* 🔥 บังคับเลย */
+  min-height:100vh;
+}
+
+/* 🔥 กล่องวัคซีน */
+.vaccine-box{
+  background:#f8fafc;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:8px;
+}
+
+/* 🔥 หัวข้อ */
+.vaccine-title{
+  font-weight:600;
+  font-size:13px;
+  margin-bottom:5px;
+  color:#334155;
+}
+
+/* 🔥 checkbox */
+.vaccine-item{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  font-size:13px;
+}
+
+/* 🔥 grid */
+.vaccine-grid{
+  display:grid;
+  grid-template-columns: repeat(4,1fr);
+  gap:6px;
+}
+/* ช่องวัคซีนในตาราง */
+.vaccine-cell{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+
+  border:1px solid #e5e7eb;
+  background:#ffffff;
+  border-radius:8px;
+
+  padding:6px 8px;
+  cursor:pointer;
+
+  transition:all .15s ease;
+}
+
+.vaccine-cell:hover{
+  border-color:#3b82f6;
+  background:#f8fafc;
+}
+
+/* ไอคอน */
+.vac-icon{
+  font-size:16px;
+  color:#3b82f6;
+}
+
+/* ตัวเลขเล็ก ๆ */
+.vac-count{
+  font-size:12px;
+  color:#64748b;
+}
+.vaccine-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  width:80px;
+  height:42px;
+  border-radius:14px;
+  background:#f1e7e7;
+  border:1px solid #ddd;
+  font-weight:600;
+  font-size:18px;
+  color:#dc2626;
+  transition:0.2s;
+}
+.vaccine-btn:hover{
+  transform:scale(1.05);
+}
+
+td select{
+  min-width: 190px;
+}
+
+
+/* ซ่อนข้อความ */
+.sidebar.hide span,
+.sidebar.hide h5{
+  display:none;
+}
+/* mobile sidebar */
+@media(max-width:768px){
+
+  .sidebar{
+    position:fixed;
+    top:0;
+    left:-260px;
+    width:260px;
+    height:100%;
+    z-index:1000;
+  }
+
+  .sidebar.show{
+    left:0;
+  }
+
+  /* ฉากหลัง */
+  .backdrop{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.4);
+    z-index:999;
+    display:none;
+  }
+
+  .backdrop.show{
+    display:block;
+  }
+}
+@media(max-width:768px){
+
+  .form-control,
+  .btn{
+    height:45px;
+    font-size:15px;
+  }
+
+}
+@media(max-width:768px){
+  .vaccine-grid{
+    grid-template-columns: repeat(2,1fr);
+  }
+}
+
+@media(max-width:768px){
+  .sidebar-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+
+  .sidebar-header h5{
+    font-size:15px;
+  }
+}
+/* ตอนหุบ */
+.sidebar.hide{
+  width:70px;
+  overflow:hidden;
+}
+
+/* ซ่อนข้อความ เหลือแต่ไอคอน */
+.sidebar.hide span,
+.sidebar.hide h5{
+  display:none;
+}
+.main-layout{
+  display:flex;
+}
+@media(max-width:768px){
+
+  .form-control,
+  .btn,
+  select{
+    height:45px !important;
+    font-size:15px;
+  }
+
+  .btn{
+    border-radius:10px;
+  }
+
+}
+@media(max-width:768px){
+  .vaccine-grid{
+    grid-template-columns: repeat(2,1fr);
+  }
+}
+@media(max-width:768px){
+
+  table{
+    font-size:12px;
+  }
+
+  .table td input,
+  .table select{
+    min-width:120px;
+  }
+
+}
+@media(max-width:768px){
+
+  .d-flex.align-items-center{
+    flex-direction:column;
+    align-items:stretch;
+    gap:8px;
+  }
+
+  #searchInput{
+    max-width:100% !important;
+  }
+
+}
+@media(max-width:768px){
+  canvas{
+    height:200px !important;
+  }
+}
+/* content */
+.flex-grow-1{
+  transition:0.3s;
+  width:100%;
+}
+/* 🔥 ปุ่ม logout */
+.logout-btn{
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 14px;
+  border:none;
+  border-radius:10px;
+  background:rgba(255,255,255,0.1);
+  color:white;
+  transition:0.3s;
+}
+
+/* icon */
+.logout-btn i{
+  font-size:18px;
+  color:#a2f0d4;
+}
+
+/* hover */
+.logout-btn:hover{
+  background:#af2a2a;
+  color:white;
+}
+
+.logout-btn:hover i{
+  color:white;
+}
+.menu-btn{
+  background:rgba(255,255,255,0.1);
+  border:none;
+  border-radius:10px;
+  padding:8px 10px;
+  color:white;
+  transition:0.3s;
+}
+
+.menu-btn:hover{
+  background:#667775;
+}
+.sidebar-header{
+  margin-bottom:20px;
+}
+.sidebar{
+  width:260px;
+}
+
+
+
+.mobile-list{
+  display:none;
+}
+
+@media(max-width:768px){
+
+  table{
+    display:none;
+  }
+
+  .mobile-list{
+    display:block;
+  }
+
+  .child-card{
+    background:white;
+    border-radius:12px;
+    padding:12px;
+    margin-bottom:10px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.05);
+  }
+
+  .child-header{
+    display:flex;
+    justify-content:space-between;
+    font-weight:600;
+  }
+
+  .child-info{
+    font-size:13px;
+    color:#64748b;
+    margin-top:5px;
+  }
+
+  .child-footer{
+    display:flex;
+    justify-content:space-between;
+    margin-top:10px;
+    align-items:center;
+  }
+
+  .status-badge{
+    padding:4px 10px;
+    border-radius:8px;
+    font-size:12px;
+  }
+
+  .done{
+    background:#dcfce7;
+    color:#166534;
+  }
+
+  .notdone{
+    background:#fee2e2;
+    color:#991b1b;
+  }
+
+}
+.form-row{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+#villageBox select{
+  width: 100%;
+  min-width: 150px;
+}
+.form-control, .form-select{
+  width: 100%;
+  max-width: 100%;
+}
+.vaccine-container{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.vaccine-card{
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  border: 1px solid #e5e7eb;
+}
+
+.vaccine-card h6{
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #374151;
+}
+
+.vaccine-card label{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+.vaccine-card input{
+  accent-color: #22c55e; /* สีเขียว */
+}
+.vaccine-card input:checked + span{
+  color:#22c55e;
+}
+
+
+#vaccineEditor h6{
+  color:#374151;
+  margin-bottom:5px;
+  border-bottom:1px solid #eee;
+  padding-bottom:3px;
+}
+
+#vaccineEditor label{
+  background:#f9fafb;
+  padding:6px 10px;
+  border-radius:8px;
+}
+.age-cell{
+  font-weight: 200;
+  
+}
+td{
+  white-space: nowrap;
+}
+.age-cell{
+  white-space: nowrap;
+}
+.age-badge{
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:600;
+  white-space: nowrap;
+}
+
+/* สี */
+.age-green{
+  background:#dcfce7;
+  color:#3b6d4d;
+}
+
+.age-yellow{
+  background:#fef9c3;
+  color:#ffb412;
+}
+
+.age-orange{
+  background:#fed7aa;
+  color:#b53f00;
+}
+
+.age-red{
+  background:#cdeaff;
+  color:#1a068b;
+}
+
+
+.age-badge:hover{
+  transform: scale(1.05);
+}
+
+.modal-body div:hover{
+  background:#f1f5f9;
+  transition:0.2s;
+}
+/* 📱 mobile layout fix */
+@media(max-width:768px){
+
+  .card{
+    padding:12px !important;
+  }
+
+  h6{
+    font-size:14px;
+  }
+
+  canvas{
+    height:220px !important;
+  }
+
+  /* filter stack */
+  .row.g-2 > div{
+    width:100% !important;
+  }
+
+  /* ปุ่ม */
+  button{
+    width:100%;
+    margin-bottom:6px;
+  }
+
+}
+.mobile-list{
+  display:none;
+}
+
+@media(max-width:768px){
+  table{ display:none; }
+  .mobile-list{ display:block; }
+}
+@media(max-width:768px){
+  .sidebar{
+    transition:0.3s;
+  }
+}
+.btn-mini{
+  padding:4px 8px;
+  font-size:12px;
+  border-radius:8px;
+}
+.btn-mini{
+  padding:6px 12px;
+  font-size:13px;
+  border-radius:10px;
+  width:auto;        /* ❗ สำคัญ ไม่ให้เต็มแถว */
+  display:inline-block;
+}
+#adminMenu{
+  display:none;
+}
+
+.age-cell .badge{
+  font-size:12px;
+  padding:6px 10px;
+  border-radius:10px;
+}
+</style>
+</head>
+<body>
+
+<script>
+if(!localStorage.getItem("user")){
+    window.location.href = "login.html";
+}
+</script>
+<div class="main-layout">
+
+  <!-- 🔵 Sidebar -->
+  <div class="sidebar" id="sidebar" min-height:100vh;>
+     <div class="sidebar-header d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-2">
+        <div class="logo-box"></div>
+        <h5 class="mb-0 text-white">ระบบติดตามวัคซีน</h5>
+      </div>
+      <button onclick="toggleSidebar()" class="menu-btn">
+        <i class="fa fa-bars"></i>
+      </button>
+</div>
+   
+    <ul class="nav flex-column mt-3">
+
+      <li class="nav-item">
+        <a href="index.html" class="nav-link text-white ">🏠 <span>หน้าแรก</span></a>
+      </li>
+      <li class="nav-item" id="adminMenu">
+        <a href="admin.html" class="nav-link text-warning">
+          👑 <span>Admin</span>
+        </a>
+      </li>
+
+      <li class="nav-item mt-3">
+        <button onclick="logout()" class="logout-btn"><i class="fa fa-power-off"></i><span>ออกจากระบบ</span></button>
+    </ul>
+
+      <hr>
+      
+      <div style="display:flex;align-items:center;gap:8px;">
+        <i class="fa fa-id-card"></i>
+        <span id="userInfo"></span>
+        </div>
+    </div>
+
+
+<div class="flex-grow-1 p-3">
+
+    <!-- KPI อยู่ตรงนี้ -->
+    <div class="row g-3 mb-4">
+
+      <div class="col-md-3">
+        <div class="card kpi-card bg-light">
+          <small>👶 เด็กทั้งหมด</small>
+          <h4 id="total"></h4>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card kpi-card bg-success-subtle">
+          <small>💉 ฉีดแล้ว</small>
+          <h4 id="done"></h4>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card kpi-card bg-danger-subtle">
+          <small>⛔ ยังไม่ครบ</small>
+          <h4 id="notdone"></h4>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card kpi-card bg-warning-subtle">
+          <small>📊 Coverage</small>
+          <h4 id="percent"></h4>
+        </div>
+      </div>
+
+    </div>
+<!-- Content -->
+<div class="flex-grow-1 p-3">
+
+<!-- Filter -->
+<div class="card p-3 mb-3">
+<div class="row g-2">
+
+<div class="col-md-3">
+<select id="tambonFilter" onchange="updateHospitalFilter(); loadFollow()" class="form-select">
+  <option value="all">📍 ทุกตำบล</option>
+  <option value="kolok">สุไหงโก-ลก</option>
+  <option value="munoh">มูโนะ</option>
+  <option value="pasemas">ปาเสมัส</option>
+  <option value="puyoh">ปูโยะ</option>
+</select>
+</div>
+
+<div class="col-md-3">
+<!-- 🏥 เลือก รพ.สต -->
+<select id="hospitalFilter" onchange="loadFollow()" class="form-select">
+  <option value="all">🏥 ทุกหน่วยบริการ</option>
+</select>
+</div>
+
+<div class="col-md-3">
+<select id="ageFilter" class="form-select" style="max-width:180px;">
+  <option value="all">👶 ทุกอายุ</option>
+  <option value="0-6">0-6 เดือน</option>
+  <option value="6-12">6-12 เดือน</option>
+  <option value="1-2">1-2 ปี</option>
+  <option value="2+">มากกว่า 2 ปี</option>
+</select>
+</div>
+
+<div style="text-align:left; margin-bottom:10px;">
+  <button onclick="setMode('percent')" class="btn btn-outline-warning">🍩 ภาพรวม</button>
+  <button onclick="setMode('village')" class="btn btn-outline-success">📊 รายหมู่</button>
+  <button onclick="openCareByTambon()" class="btn btn-outline-primary">👥 ผู้ดูแลหมู่บ้าน</button>
+  
+</div>
+
+<div class="flex-grow-1 p-3">
+
+    <div class="container-fluid">
+
+      <!-- 🔥 กราฟ -->
+      <div class="row g-3">
+        <div class="col-md-6">
+          <h6 class="text-center">🧩 แผนภูมิแสดงสถานะการติดตาม</h6>
+          <div class="card p-3" style="height:300px;">
+            <div style="position:relative; width:100%; height:260px;">
+              <canvas id="followChart"></canvas>
+            </div>
+          </div>
+          </div>
+        
+
+        <div class="col-md-6">
+          <h6 class="text-center">💉 แผนภูมิแสดงภาพรวมค่าการใช้วัคซีน</h6>
+          <div class="card p-3" style="height:300px;">
+            <canvas id="vaccineChart"></canvas>
+          </div>
+        </div>
+
+</div>
+      </div>
+    </div>
+  </div>
+
+<!-- Table -->
+<div class="card p-3">
+<div class="col-md-9">
+
+<div class="d-flex align-items-center">
+
+  <input 
+    id="searchInput"
+    type="text" 
+    class="form-control me-2"
+    style="max-width: 300px;"
+    placeholder="🔍 ค้นหา..."
+    onkeyup="loadFollow()"
+  >
+
+
+  <!-- 🔘 ปุ่ม -->
+   
+  <button class="btn btn-success dropdown-toggle w-28 mb-2"
+          data-bs-toggle="collapse"
+          data-bs-target="#addForm">
+    ➕ เพิ่มข้อมูล
+  </button>
+ </div>
+    <div id="addForm" class="collapse">
+
+    <div class="card p-3">
+      <h6>➕ เพิ่มข้อมูล</h6>
+
+      <div class="row g-2">
+
+        <div class="col-md-3">
+          <input id="hn" class="form-control" placeholder="HN">
+        </div>
+
+        <div class="col-md-3">
+          <input id="cid" class="form-control" placeholder="เลขบัตร">
+        </div>
+
+        <div class="col-md-5">
+          <input id="name" class="form-control" placeholder="ชื่อ">
+        </div>
+
+        <div class="col-md-3">
+          <input id="house" class="form-control" placeholder="บ้าน">
+        </div>
+        <div class="col-md-3">
+          <select id="tambon" class="form-select">
+            <option value="">-- เลือกตำบล --</option>
+            <option value="kolok">สุไหงโก-ลก</option>
+            <option value="munoh">มูโนะ</option>
+            <option value="pasemas">ปาเสมัส</option>
+            <option value="puyoh">ปูโยะ</option>
+          </select>
+        </div>
+          <div class="col-md-3">
+                <div id="soiBox" style="display:none;">
+                  <input id="soi" class="form-control" placeholder="ซอย">
+                </div>
+          </div>
+
+
+        <div class="col-md-4">
+          <div id="villageBox">
+            <select id="village" class="form-select">
+              <option value="">-- เลือกหมู่/ชุมชน --</option>
+            </select>
+          </div>
+        </div>
+
+
+              <div class="col-md-5">
+                <select id="hospital" class="form-select">
+                  <option value="">-- เลือกรพ.สต --</option>
+                  <option value="10170">รพ.สต.ปูโยะ</option>
+                  <option value="10169">รพ.สต.มูโนะ</option>
+                  <option value="10168">รพ.สต.ปาเสมัส</option>
+                  <option value="77729">ศูนย์แพทย์ใกล้ใจ1</option>
+                  <option value="77728">ศูนย์แพทย์ใกล้ใจ2</option>
+                  <option value="10658">รพ.สต.บ้านกวาลอซีรา</option>
+                </select>
+              </div>
+              
+
+                <div class="col-md-3">
+                  <div style="flex-basis:100%">
+                  <input id="birth" class="form-control" placeholder="วันเกิด">
+                </div>
+        </div>
+
+
+        <div class="vaccine-container">
+
+          <!-- 👶 แรกเกิด -->
+          <div class="vaccine-card">
+            <h6>👶 แรกเกิด</h6>
+            <label><input type="checkbox" value="BCG"> BCG</label>
+            <label><input type="checkbox" value="HBV1"> HBV1</label>
+          </div>
+
+          <!-- 🍼 2 เดือน -->
+          <div class="vaccine-card">
+            <h6>🍼 2 เดือน</h6>
+            <label><input type="checkbox" value="DTP1"> DTP1</label>
+            <label><input type="checkbox" value="OPV1"> OPV1</label>
+          </div>
+
+          <!-- 🍼 4 เดือน -->
+          <div class="vaccine-card">
+            <h6>🍼 4 เดือน</h6>
+            <label><input type="checkbox" value="DTP2"> DTP2</label>
+            <label><input type="checkbox" value="OPV2"> OPV2</label>
+          </div>
+
+          <!-- 🍼 6 เดือน -->
+          <div class="vaccine-card">
+            <h6>🍼 6 เดือน</h6>
+            <label><input type="checkbox" value="DTP3"> DTP3</label>
+            <label><input type="checkbox" value="OPV3"> OPV3</label>
+            <label><input type="checkbox" value="HBV3"> HBV3</label>
+          </div>
+
+          <!-- 👶 9-12 เดือน -->
+          <div class="vaccine-card">
+            <h6>👶 9-12 เดือน</h6>
+            <label><input type="checkbox" value="MMR1"> MMR1</label>
+            <label><input type="checkbox" value="JE1"> JE1</label>
+          </div>
+
+          <!-- 👶 18 เดือน -->
+          <div class="vaccine-card">
+            <h6>👶 18 เดือน</h6>
+            <label><input type="checkbox" value="DTP4"> DTP4</label>
+            <label><input type="checkbox" value="OPV4"> OPV4</label>
+            <label><input type="checkbox" value="MMR2"> MMR2</label>
+          </div>
+
+          <!-- 🧒 2.5 - 3 ปี -->
+          <div class="vaccine-card">
+            <h6>🧒 2.5 - 3 ปี</h6>
+            <label><input type="checkbox" value="JE2"> JE2</label>
+          </div>
+
+          <!-- 🎒 วัยเรียน -->
+          <div class="vaccine-card">
+            <h6>🎒 วัยเรียน</h6>
+            <label><input type="checkbox" value="dT"> dT</label>
+            <label><input type="checkbox" value="HPV"> HPV</label>
+          </div>
+
+          <!-- 💉 เสริม -->
+          <div class="vaccine-card">
+            <h6>💉 เสริม</h6>
+            <label><input type="checkbox" value="IPV"> IPV</label>
+            <label><input type="checkbox" value="HBV2"> HBV2</label>
+          </div>
+
+        </div>
+
+
+
+  
+        <div class="col-md-8">
+          <input id="note" class="form-control" placeholder="หมายเหตุ">
+        </div>
+
+        <div class="col-md-4">
+         <button onclick="addChildFull()" class="btn btn-inverse-success ">
+          💾 บันทึก
+        </button>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+<div class="section-title">📋 รายชื่อเด็ก</div>
+
+<div class="table-responsive">
+<table class="table table-bordered align-middle">
+<div id="mobileList" class="mobile-list d-md-none"></div>
+<thead>
+<tr>
+<th>HN</th>
+<th>เลขบัตร</th>
+<th>ชื่อ</th>
+<th>ตำบล</th>
+<th>รพ.สต</th>
+<th>บ้าน</th>
+<th>หมู่</th>
+<th>วันเกิด</th>
+<th>อายุ</th>
+<th>วัคซีน</th>
+<th>หมายเหตุ</th>
+<th>เวลา</th>
+<th>ลบ</th>
+<th>สถานะ</th>
+</tr>
+</thead>
+
+<tbody id="followTable"></tbody>
+
+</table>
+</div>
+
+</div>
+
+<!-- Import -->
+<div class="card p-2 mt-3">
+<div class="row g-2 align-items-center">
+
+
+<div class="col-md-6">
+<input type="file" id="fileInput" class="form-control mb-2">
+<button onclick="importExcel()" class="btn btn-success">📥 Import</button>
+
+</div>
+
+</div>
+</div>
+
+</div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<div class="modal fade" id="vaccineModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5>💉 เลือกวัคซีน</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body" id="vaccineEditor"></div>
+
+      <div class="modal-footer">
+        <button class="btn btn-success" onclick="saveVaccines()">บันทึก</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+    <div class="modal fade" id="careModal">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+          <div class="modal-header">
+            <h5 id="careTitle">ผู้ดูแลหมู่บ้าน</h5>
+            <button class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body" id="careBody"></div>
+
+        </div>
+      </div>
+    </div>
+
+<script src="app.js"></script>
+
+
+<script>
+window.addEventListener("DOMContentLoaded", () => {
+
+  const name = localStorage.getItem("name");
+  const cid = localStorage.getItem("user");
+
+  if(!cid){
+    window.location.href = "login.html";
+    return;
+  }
+
+  document.getElementById("userInfo").innerText =
+  localStorage.getItem("name");
+ loadFollow();
+ loadvaccineChart();
+ enableSwipe();
+ 
+});
+document.getElementById("ageFilter").addEventListener("change", ()=>{
+  console.log("age changed");
+  loadFollow();
+});
+const role = localStorage.getItem("role");
+
+// ❌ ซ่อนก่อน (กันกระพริบ)
+document.getElementById("adminMenu").style.display = "none";
+
+// ✅ แสดงเฉพาะ admin
+if(role === "admin"){
+  document.getElementById("adminMenu").style.display = "block";
+}
+if(localStorage.getItem("role") === "admin"){
+  document.getElementById("adminMenu").style.display = "block";
+}
+
+</script>
+
+
+</body>
+</html>
